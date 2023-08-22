@@ -13,6 +13,7 @@ import (
 	"github.com/arno4000/schaebigctl/pkg/ai"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func StartBot(token string) {
@@ -32,9 +33,15 @@ func StartBot(token string) {
 	dg.AddHandler(func(s *discordgo.Session, t *discordgo.ThreadCreate) {
 
 		if t.NewlyCreated {
-			waitDuration := time.Duration(rand.Intn(20))
-			logrus.Infof("Posting message to thread %s in %d minutes", t.Name, waitDuration)
-			time.Sleep(waitDuration * time.Minute)
+			timeout := viper.GetInt("maxTimeoutMinutes")
+			var waitDuration time.Duration
+			if timeout > 0 {
+				waitDuration = time.Duration(rand.Intn(viper.GetInt("maxTimeoutMinutes")))
+				logrus.Infof("Posting message to thread %s in %d minutes", t.Name, waitDuration)
+				time.Sleep(waitDuration * time.Minute)
+			} else {
+				logrus.Infof("Posting message to thread %s now", t.Name)
+			}
 
 			threadMessage, err := GetThreadMessage(t.ID, token)
 			if err != nil {
@@ -45,7 +52,7 @@ func StartBot(token string) {
 			if err != nil {
 				logrus.Errorln(err)
 			}
-			logrus.Infof("Posted message to thread %s, ID: %s, waited %d minutes", t.Name, t.ID, waitDuration)
+			logrus.Infof("Posted message to thread %s, ID: %s", t.Name, t.ID, waitDuration)
 			_, err = s.ChannelMessageSend(t.ID, answer)
 			if err != nil {
 				logrus.Errorln(err)
@@ -77,7 +84,7 @@ func GetThreadMessage(threadID string, token string) (string, error) {
 	req.Header.Set("authority", "discord.com")
 	req.Header.Set("accept", "*/*")
 	req.Header.Set("accept-language", "de-DE,de;q=0.8")
-	req.Header.Set("authorization", "discord_token")
+	req.Header.Set("authorization", token)
 	resp, err := client.Do(req)
 	if err != nil {
 		logrus.Errorln(err)
