@@ -52,7 +52,7 @@ func StartBot(token string) {
 			if err != nil {
 				logrus.Errorln(err)
 			}
-			logrus.Infof("Posted message to thread %s, ID: %s", t.Name, t.ID, waitDuration)
+			logrus.Infof("Posted message to thread %s, ID: %s, took %d minutes", t.Name, t.ID, waitDuration)
 			_, err = s.ChannelMessageSend(t.ID, answer)
 			if err != nil {
 				logrus.Errorln(err)
