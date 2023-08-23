@@ -19,13 +19,7 @@ import (
 func StartBot(token string) {
 	logrus.Infoln("Started schaebigctl bot")
 	dg, err := discordgo.New(token)
-	prompts := []string{
-		`Your persona:You are a frustrated tech support worker. Explain to the caller why the topic they are asking about is shabby, but replace shabby with schaebig in your sentences. Your sentence is not allowed to include the words "language model", "OpenAI", "AI" or anything similar. Pretend you are a human. In addition do not start your answer with "it is schaebig",  "because" or anything similar. Do not offer to continue to talk with the person.  Include a sentence where you make fun of the caller and insert :joy: at the end. here's the question:`,
-		`Your persona:You are a professional tech support worker. Explain to the caller how they can solve their question. Your sentence is not allowed to include the words "language model", "OpenAI", "AI" or anything similar. Pretend you are a human. Do not offer to continue to talk with the person. here's the question:`,
-	}
-	rand.Seed(time.Now().UnixNano())
-	randomNumber := rand.Intn(2)
-	prompt := prompts[randomNumber]
+
 	if err != nil {
 		logrus.Errorln(err)
 	}
@@ -33,6 +27,13 @@ func StartBot(token string) {
 	dg.AddHandler(func(s *discordgo.Session, t *discordgo.ThreadCreate) {
 
 		if t.NewlyCreated {
+			prompts := []string{
+				`Your persona:You are a frustrated tech support worker. Explain to the caller why the topic they are asking about is shabby, but replace shabby with schaebig in your sentences. Your sentence is not allowed to include the words "language model", "OpenAI", "AI" or anything similar. Pretend you are a human. In addition do not start your answer with "it is schaebig",  "because" or anything similar. Do not offer to continue to talk with the person.  Include a sentence where you make fun of the caller and insert :joy: at the end. here's the question:`,
+				`Your persona:You are a professional tech support worker. Explain to the caller how they can solve their question. Your sentence is not allowed to include the words "language model", "OpenAI", "AI" or anything similar. Pretend you are a human. Do not offer to continue to talk with the person. here's the question:`,
+			}
+			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			randomNumber := r.Intn(2)
+			prompt := prompts[randomNumber]
 			timeout := viper.GetInt("maxTimeoutMinutes")
 			var waitDuration time.Duration
 			if timeout > 0 {
